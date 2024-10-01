@@ -1,0 +1,1 @@
+# aca vamos a insertar datos, consultarlos, la app de consola basicamente
