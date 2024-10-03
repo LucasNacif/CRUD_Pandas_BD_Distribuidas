@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listar Ventas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        button {
+            padding: 5px 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #c82333;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modify-link, .create-link {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .modify-link:hover {
+            background-color: #0056b3;
+        }
+
+        .create-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ventas</h1>
+        <table>
+            <tr>
+                <th>ID Venta</th>
+                <th>Nombre del producto</th>
+                <th>Precio del producto</th>
+                <th>Cantidad</th>
+                <th>Nombre del Cliente</th>
+                <th>Fecha de la venta</th>
+                <th>Acciones</th>
+            </tr>
+            {% for venta in ventas %}
+            <tr>
+                <td>{{ venta[0] }}</td>
+                <td>{{ get_producto(venta[1]).nombre }}</td>
+                <td>{{ get_producto(venta[1]).precio }}</td>
+                <td>{{ venta[2] }}</td>
+                <td>{{ venta[3] }}</td>
+                <td>{{ venta[4] }}</td>
+                <td class="actions">
+                    <a class="modify-link" href="{{ url_for('modificar_venta', id_venta=venta[0]) }}">Modificar</a>
+                    <form action="{{ url_for('eliminar_venta', id_venta=venta[0]) }}" method="POST" style="display:inline;">
+                        <button type="submit">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <a class="create-link" href="{{ url_for('crear_venta') }}">Crear Nueva Venta</a>
+    </div>
+</body>
+</html>
