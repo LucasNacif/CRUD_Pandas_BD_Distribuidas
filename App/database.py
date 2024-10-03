@@ -19,5 +19,5 @@ def connect_mysql():
 # Conexión a MongoDB usando variables de entorno
 def connect_mongo():
     client = MongoClient(os.getenv("MONGO_URI"))
-    db = client["ventas_db"]
+    db = client["Productos_BD"]
     return db
