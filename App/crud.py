@@ -18,22 +18,30 @@ def obtener_productos_MySql():
     return productos
 
 def eliminar_productos_MySql(id):
-    connection = connect_mysql()
-    with connection.cursor() as cursor:
-        sql = "DELETE FROM Producto WHERE id_producto = %s"
-        cursor.execute(sql, (id,))
-        connection.commit()
-    connection.close()
-    return True
+    producto = obtener_producto_PorID_MySql(id)
+    if producto:
+        connection = connect_mysql()
+        with connection.cursor() as cursor:
+            sql = "DELETE FROM Producto WHERE id_producto = %s"
+            cursor.execute(sql, (id,))
+            connection.commit()
+        connection.close()
+        return True
+    else:
+        print("No se encontró el producto")
 
 def actualizar_producto_MySql(id, nombre, precio, cantidad_stock):
-    connection = connect_mysql()
-    with connection.cursor() as cursor:
-        sql = "UPDATE Producto SET nombre = %s, precio = %s, cantidad_stock = %s WHERE id_producto = %s"
-        cursor.execute(sql, (nombre, precio, cantidad_stock, id))
-        connection.commit()
-    connection.close()
-    return True
+    producto = obtener_producto_PorID_MySql(id)
+    if producto:
+        connection = connect_mysql()
+        with connection.cursor() as cursor:
+            sql = "UPDATE Producto SET nombre = %s, precio = %s, cantidad_stock = %s WHERE id_producto = %s"
+            cursor.execute(sql, (nombre, precio, cantidad_stock, id))
+            connection.commit()
+        connection.close()
+        return True
+    else:
+         return False
 
 def obtener_producto_PorID_MySql(id):
     connection = connect_mysql()
