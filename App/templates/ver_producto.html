@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Producto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-details {
+            margin-top: 20px;
+        }
+
+        .product-field {
+            margin-bottom: 15px;
+        }
+
+        .field-label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Detalles del Producto</h1>
+        <div class="product-details">
+            <div class="product-field">
+                <span class="field-label">ID:</span>
+                <span>{{ producto._id }}</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">Nombre:</span>
+                <span>{{ producto.nombre }}</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">Precio:</span>
+                <span>${{ producto.precio }}</span>
+            </div>
+            <div class="product-field">
+                <span class="field-label">Cantidad en Stock:</span>
+                <span>{{ producto.cantidad_stock }}</span>
+            </div>
+        </div>
+        <div class="button-group">
+            <a href="{{ url_for('listar_productos') }}" class="btn btn-secondary">Volver a la Lista</a>
+            <a href="{{ url_for('editar_producto', id_producto=producto._id) }}" class="btn btn-primary">Editar</a>
+        </div>
+    </div>
+</body>
+</html>
