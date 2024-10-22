@@ -23,9 +23,8 @@ def index():
 @app.route('/ventas', methods=['GET'])
 def listar_ventas():
     ventas = obtener_ventas_MySql()
-    productos = {producto['_id']: producto for producto in obtener_productos_Mongo()}  
+    productos = obtener_productos_Mongo() 
     return render_template('listar_ventas.html', ventas=ventas, productos=productos)
-
 
 @app.route('/ventas/crear', methods=['GET', 'POST'])
 def crear_venta():
@@ -35,7 +34,8 @@ def crear_venta():
         nombre_cliente = request.form['nombre_cliente']
         crear_venta_MySql(id_producto, cantidad, nombre_cliente)
         return redirect(url_for('listar_ventas'))
-    return render_template('crear_venta.html')
+    productos = obtener_productos_Mongo()
+    return render_template('crear_venta.html', productos=productos)
 
 @app.route('/ventas/modificar/<int:id_venta>', methods=['GET', 'POST'])
 def modificar_venta(id_venta):
@@ -46,7 +46,8 @@ def modificar_venta(id_venta):
         nombre_cliente = request.form['nombre_cliente']
         actualizar_venta_MySql(id_venta, id_producto, cantidad, nombre_cliente)
         return redirect(url_for('listar_ventas'))
-    return render_template('modificar_venta.html', venta=venta)
+    productos = obtener_productos_Mongo()
+    return render_template('modificar_venta.html', venta=venta, productos=productos)
 
 @app.route('/ventas/eliminar/<int:id_venta>', methods=['POST'])
 def eliminar_venta(id_venta):
@@ -55,8 +56,19 @@ def eliminar_venta(id_venta):
 
 @app.template_global()
 def get_producto(id_producto):
-    producto = obtener_producto_por_id_Mongo(id_producto)
-    return producto  
+    try:
+        id_producto_str = str(id_producto)
+        productos = obtener_productos_Mongo()
+        
+        for producto in productos:
+            if str(producto.get('id', '')) == id_producto_str:
+                return producto
+                
+        return {"nombre": "Producto no encontrado"}
+        
+    except Exception as e:
+        print(f"Error al obtener producto: {e}")
+        return {"nombre": "Error al obtener producto"}
 
 if __name__ == '__main__':
     app.run(debug=True)
