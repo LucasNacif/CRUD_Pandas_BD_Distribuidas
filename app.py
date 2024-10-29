@@ -1,4 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, send_file, url_for
+import pandas as pd 
+from io import BytesIO
+
 from App.crud_mysql import (
     crear_venta_MySql,
     obtener_ventas_MySql,
@@ -53,6 +56,42 @@ def modificar_venta(id_venta):
 def eliminar_venta(id_venta):
     eliminar_venta_MySql(id_venta)
     return redirect(url_for('listar_ventas'))
+
+@app.route('/dashboard')
+def dashboard():
+    ventas = obtener_ventas_MySql()
+    
+    df = pd.DataFrame(ventas, columns=['id_venta', 'id_producto', 'cantidad', 'nombreCliente', 'fecha'])
+    
+    df['fecha'] = pd.to_datetime(df['fecha'])
+    
+    def get_producto_nombre(id_producto):
+        producto = get_producto(id_producto)
+        return producto.get('nombre', 'Desconocido')
+    
+    df['nombre_producto'] = df['id_producto'].apply(get_producto_nombre)
+    
+    df['fecha_formato'] = df['fecha'].dt.strftime('%Y-%m-%d %H:%M:%S')
+    
+    return render_template('pandas.html', 
+                         df=df,
+                         total_ventas=len(df),
+                         total_productos=df['cantidad'].sum(),
+                         clientes_unicos=df['nombreCliente'].nunique(),
+                         venta_promedio=df['cantidad'].mean())
+    
+@app.route('/export')
+def exportarExcel():
+    ventas = obtener_ventas_MySql()
+    df = pd.DataFrame(ventas, columns=['id_venta', 'id_producto', 'cantidad', 'nombreCliente', 'fecha'])
+    
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, sheet_name='Ventas')
+        writer.close()
+        output.seek(0)
+        return send_file(output, download_name="ventas.xlsx", as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    redirect('/dashboard')
 
 @app.template_global()
 def get_producto(id_producto):

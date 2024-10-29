@@ -84,7 +84,12 @@
             <input type="text" name="nombre_cliente" required>
             <button type="submit">Crear Venta</button>
         </form>
-        <a href="{{ url_for('listar_ventas') }}">Volver a listar ventas</a>
+
+        </div>
+        <div class="row mb-4">
+            <a href="{{ url_for('listar_ventas') }} "class="btn btn-primary">Volver a listar ventas</a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-success">Ir al dashboard</a>
+        </div>
     </div>
 </body>
 </html>
