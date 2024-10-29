@@ -15,7 +15,6 @@ from App.crud_mongo import (
 )
 
 app = Flask(__name__, template_folder='App/templates')
-app.secret_key = 'tu_clave_secreta'  # Necesario para flash messages
 
 @app.route('/')
 def index():
