@@ -118,8 +118,8 @@
             {% for venta in ventas %}
             <tr>
                 <td>{{ venta[0] }}</td>
-                <td>{{ get_producto(venta[1]).nombre }}</td>
-                <td>{{ get_producto(venta[1]).precio }}</td>
+                <td>{{ productos[venta[1]]['nombre'] if venta[1] in productos else 'Producto no encontrado' }}</td>
+                <td>{{ productos[venta[1]]['precio'] if venta[1] in productos else '0' }}</td>
                 <td>{{ venta[2] }}</td>
                 <td>{{ venta[3] }}</td>
                 <td>{{ venta[4] }}</td>
@@ -133,6 +133,7 @@
             {% endfor %}
         </table>
         <a class="create-link" href="{{ url_for('crear_venta') }}">Crear Nueva Venta</a>
+        <a class="create-link" href="{{ url_for('listar_productos') }}">Productos</a>
         <a class="create-link" href="{{ url_for('dashboard') }}">Dashboard</a>
 
     </div>
