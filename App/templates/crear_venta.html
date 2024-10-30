@@ -18,7 +18,7 @@
         }
 
         .container {
-            max-width: 500px;
+            max-width: 800px;
             margin: 0 auto;
             background: white;
             padding: 20px;
@@ -26,70 +26,116 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        form {
-            display: flex;
-            flex-direction: column;
+        .form-group {
+            margin-bottom: 20px;
         }
 
         label {
+            display: block;
             margin-bottom: 5px;
-            color: #555;
+            color: #333;
+            font-weight: bold;
         }
 
         input[type="text"],
         input[type="number"] {
-            padding: 10px;
-            margin-bottom: 15px;
+            width: 100%;
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 16px;
+            box-sizing: border-box;
         }
 
-        button {
-            padding: 10px;
-            background-color: #28a745;
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .create-link {
+            padding: 5px 10px;
+            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background-color: #218838;
-        }
-
-        a {
+            text-align: center;
+            text-decoration: none;
             display: block;
             margin-top: 20px;
-            text-align: center;
-            color: #007bff;
-            text-decoration: none;
         }
 
-        a:hover {
-            text-decoration: underline;
+        .create-link:hover {
+            background-color: #0056b3;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Crear Venta</h1>
-        <form method="POST">
-            <label for="id_producto">ID del Producto:</label>
-            <input type="text" name="id_producto" required>
-            <label for="cantidad">Cantidad:</label>
-            <input type="number" name="cantidad" required>
-            <label for="nombre_cliente">Nombre del Cliente:</label>
-            <input type="text" name="nombre_cliente" required>
-            <button type="submit">Crear Venta</button>
-        </form>
+        <h1>Crear Nueva Venta</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-        </div>
-        <div class="row mb-4">
-            <a href="{{ url_for('listar_ventas') }} "class="btn btn-primary">Volver a listar ventas</a>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-success">Ir al dashboard</a>
-        </div>
+        <form method="POST">
+            <div class="form-group">
+                <label for="id_producto">ID del Producto:</label>
+                <input type="text" 
+                       name="id_producto" 
+                       id="id_producto" 
+                       required>
+            </div>
+            
+            <div class="form-group">
+                <label for="cantidad">Cantidad:</label>
+                <input type="number" 
+                       name="cantidad" 
+                       id="cantidad" 
+                       required 
+                       min="1">
+            </div>
+            
+            <div class="form-group">
+                <label for="nombre_cliente">Nombre del Cliente:</label>
+                <input type="text" 
+                       name="nombre_cliente" 
+                       id="nombre_cliente"
+                       required>
+            </div>
+            
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Guardar Venta</button>
+            </div>
+        </form>
+        
+        <a class="create-link" href="{{ url_for('listar_ventas') }}" > Ventas</a>
+        <a class="create-link" href="{{ url_for('listar_productos') }}">Productos</a>
     </div>
 </body>
 </html>
