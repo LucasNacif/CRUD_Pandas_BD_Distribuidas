@@ -33,10 +33,8 @@ def listar_ventas():
 
 @app.route('/crear_venta', methods=['GET', 'POST'])
 def crear_venta():
-    # Obtener productos usando la función existente
     productos = obtener_productos_Mongo()
     
-    # Verificar si hay productos disponibles
     if not productos:
         flash('No hay productos disponibles para vender. Por favor, agregue productos primero.', 'error')
         return redirect(url_for('listar_productos'))
@@ -47,22 +45,18 @@ def crear_venta():
             cantidad = int(request.form['cantidad'])
             nombre_cliente = request.form['nombre_cliente']
             
-            # Verificar que el producto existe y tiene stock suficiente
             producto = obtener_producto_por_id_Mongo(id_producto)
             
             if not producto:
                 flash('Producto no encontrado', 'error')
                 return redirect(url_for('crear_venta'))
             
-            # Verificar stock suficiente
             if producto['cantidad_stock'] < cantidad:
                 flash(f'No hay suficiente stock disponible. Stock actual: {producto["cantidad_stock"]}', 'error')
                 return redirect(url_for('crear_venta'))
             
-            # Crear la venta usando la función MySQL existente
             crear_venta_MySql(id_producto, cantidad, nombre_cliente)
             
-            # Actualizar el stock del producto usando la función MongoDB existente
             nuevo_stock = producto['cantidad_stock'] - cantidad
             actualizar_producto_Mongo(
                 id_producto,
