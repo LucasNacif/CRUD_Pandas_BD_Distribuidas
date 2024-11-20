@@ -5,6 +5,8 @@ import pandas as pd
 from io import BytesIO
 from bson import ObjectId, errors as bson_errors
 import seaborn as sns
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from App.crud_mysql import (
@@ -155,7 +157,7 @@ def ver_producto(id_producto):
     flash('Producto no encontrado', 'error')
     return redirect(url_for('listar_ventas_productos'))
 
-
+# graficos
 def generar_grafico():
     productos = obtener_productos_Mongo()
 
@@ -174,6 +176,78 @@ def generar_grafico():
 
     return imagen
 
+def obtener_estadisticas_ventas(df):
+
+    estadisticas = {
+        'Cantidad de Ventas': {
+            'Total': len(df),
+            'Promedio por Venta': df['cantidad'].mean(),
+            'Cantidad Mínima': df['cantidad'].min(),
+            'Cantidad Máxima': df['cantidad'].max(),
+            'Desviación Estándar': df['cantidad'].std()
+        },
+        'Clientes': {
+            'Clientes Únicos': df['nombreCliente'].nunique(),
+            'Cliente con Más Compras': df['nombreCliente'].value_counts().index[0]
+        },
+        'Fechas': {
+            'Primer Venta': df['fecha'].min(),
+            'Última Venta': df['fecha'].max()
+        }
+    }
+    
+    # Información del DataFrame
+    info_df = {
+        'Tipos de datos': dict(df.dtypes),
+        'Valores no nulos': dict(df.count())
+    }
+    
+    return estadisticas, info_df
+
+def generar_graficos_ventas(df):
+
+    # Gráfico de ventas por producto
+    plt.figure(figsize=(10, 6))
+    ventas_por_producto = df.groupby('nombre_producto')['cantidad'].sum()
+    ventas_por_producto.plot(kind='bar')
+    plt.title('Ventas Totales por Producto')
+    plt.xlabel('Producto')
+    plt.ylabel('Cantidad Vendida')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    
+    # Guardar gráfico de ventas en buffer
+    buffer_ventas = io.BytesIO()
+    plt.savefig(buffer_ventas, format='png')
+    buffer_ventas.seek(0)
+    grafico_ventas = base64.b64encode(buffer_ventas.getvalue()).decode()
+    plt.close()
+    
+    # Gráfico de productos (asumiendo que esta función ya existe)
+    grafico_productos = generar_grafico()
+    
+    return grafico_productos, grafico_ventas
+
+
+def generar_grafico_distribucion_ventas(df):
+    plt.figure(figsize=(10, 6))
+    
+    # Histograma de cantidades de venta
+    plt.hist(df['cantidad'], bins=10, edgecolor='black')
+    plt.title('Distribución de Cantidades de Venta')
+    plt.xlabel('Cantidad Vendida')
+    plt.ylabel('Frecuencia')
+    plt.tight_layout()
+    
+    # Guardar gráfico en buffer
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    grafico_distribucion = base64.b64encode(buffer.getvalue()).decode()
+    plt.close()
+    
+    return grafico_distribucion
+
 # Rutas para Dashboard
 @app.route('/dashboard')
 def dashboard():
@@ -191,7 +265,10 @@ def dashboard():
     
     df['fecha_formato'] = df['fecha'].dt.strftime('%Y-%m-%d %H:%M:%S')
     
-    grafico_productos = generar_grafico()
+    # Obtener estadísticas y gráficos
+    estadisticas, info_df = obtener_estadisticas_ventas(df)
+    grafico_productos, grafico_ventas = generar_graficos_ventas(df)
+    grafico_distribucion = generar_grafico_distribucion_ventas(df)
     
     return render_template('pandas.html', 
                          df=df,
@@ -199,7 +276,11 @@ def dashboard():
                          total_productos=df['cantidad'].sum(),
                          clientes_unicos=df['nombreCliente'].nunique(),
                          venta_promedio=df['cantidad'].mean(),
-                         grafico_productos=grafico_productos)
+                         grafico_productos=grafico_productos,
+                         grafico_ventas=grafico_ventas,
+                         grafico_distribucion=grafico_distribucion,
+                         estadisticas=estadisticas,
+                         info_df=info_df)
 
 
 @app.route('/export')
