@@ -23,29 +23,32 @@ app.secret_key = 'tu_clave_secreta_aqui'
 
 @app.route('/')
 def index():
-    return redirect(url_for('listar_ventas'))
+    return redirect(url_for('listar_ventas_productos'))
 
-@app.route('/ventas')
-def listar_ventas():
+@app.route('/ventas_productos')
+def listar_ventas_productos():
+    # Supongamos que ya tienes funciones para obtener estas listas
     ventas = obtener_ventas_MySql()
-    productos = {str(p['_id']): p for p in obtener_productos_Mongo()}
-    return render_template('listar_ventas.html', ventas=ventas, productos=productos)
+    productosVentas = {str(p['_id']): p for p in obtener_productos_Mongo()}
+    productos = obtener_productos_Mongo()
+    return render_template('listar_ventas_productos.html', ventas=ventas, productos=productos, productosVentas=productosVentas)
+
 
 @app.route('/crear_venta', methods=['GET', 'POST'])
 def crear_venta():
-    productos = obtener_productos_Mongo()
-    
+    productos = obtener_productos_Mongo()  # Obtener lista de productos
+
     if not productos:
         flash('No hay productos disponibles para vender. Por favor, agregue productos primero.', 'error')
-        return redirect(url_for('listar_productos'))
+        return redirect(url_for('listar_ventas_productos'))
 
     if request.method == 'POST':
         try:
-            id_producto = request.form['id_producto']
-            cantidad = int(request.form['cantidad'])
-            nombre_cliente = request.form['nombre_cliente']
+            id_producto = request.form['id_producto']  # ID del producto seleccionado
+            cantidad = int(request.form['cantidad'])  # Cantidad seleccionada
+            nombre_cliente = request.form['nombre_cliente']  # Nombre del cliente
             
-            producto = obtener_producto_por_id_Mongo(id_producto)
+            producto = obtener_producto_por_id_Mongo(id_producto)  # Obtener producto por ID
             
             if not producto:
                 flash('Producto no encontrado', 'error')
@@ -55,8 +58,10 @@ def crear_venta():
                 flash(f'No hay suficiente stock disponible. Stock actual: {producto["cantidad_stock"]}', 'error')
                 return redirect(url_for('crear_venta'))
             
+            # Crear la venta en la base de datos MySQL
             crear_venta_MySql(id_producto, cantidad, nombre_cliente)
             
+            # Actualizar el stock del producto
             nuevo_stock = producto['cantidad_stock'] - cantidad
             actualizar_producto_Mongo(
                 id_producto,
@@ -66,7 +71,7 @@ def crear_venta():
             )
             
             flash('Venta creada exitosamente', 'success')
-            return redirect(url_for('listar_ventas'))
+            return redirect(url_for('listar_ventas_productos'))
             
         except ValueError:
             flash('Cantidad inválida', 'error')
@@ -75,31 +80,33 @@ def crear_venta():
 
     return render_template('crear_venta.html', productos=productos)
 
+
 @app.route('/ventas/modificar/<int:id_venta>', methods=['GET', 'POST'])
 def modificar_venta(id_venta):
-    venta = obtener_venta_por_id_MySql(id_venta)
+  
     if request.method == 'POST':
-        id_producto = request.form['id_producto']
-        cantidad = request.form['cantidad']
         nombre_cliente = request.form['nombre_cliente']
-        actualizar_venta_MySql(id_venta, id_producto, cantidad, nombre_cliente)
+        actualizar_venta_MySql(id_venta, nombre_cliente)
         flash('Venta modificada exitosamente', 'success')
-        return redirect(url_for('listar_ventas'))
-    productos = obtener_productos_Mongo()
-    return render_template('modificar_venta.html', venta=venta, productos=productos)
+        return redirect(url_for('listar_ventas_productos'))
+
+    venta = obtener_venta_por_id_MySql(id_venta)
+    producto = obtener_producto_por_id_Mongo(venta[1]) 
+    return render_template('modificar_venta.html', venta=venta, producto=producto)
+
 
 @app.route('/ventas/eliminar/<int:id_venta>', methods=['POST'])
 def eliminar_venta(id_venta):
-    eliminar_venta_MySql(id_venta)
-    flash('Venta eliminada exitosamente', 'success')
-    return redirect(url_for('listar_ventas'))
+    exito = eliminar_venta_MySql(id_venta)
+    if exito:
+        flash('Venta eliminada exitosamente', 'success')
+    else:
+        flash('Error al eliminar la venta', 'error')
+    return redirect(url_for('listar_ventas_productos'))
 
-# Rutas para Productos
-@app.route('/productos', methods=['GET'])
-def listar_productos():
-    productos = obtener_productos_Mongo()
-    return render_template('listar_productos.html', productos=productos)
 
+
+# # Rutas para Productos
 @app.route('/productos/crear', methods=['GET', 'POST'])
 def crear_producto():
     if request.method == 'POST':
@@ -112,7 +119,8 @@ def crear_producto():
             flash('Producto creado exitosamente', 'success')
         else:
             flash('Error al crear el producto', 'error')
-        return redirect(url_for('listar_productos'))
+        return redirect(url_for('listar_ventas_productos'))
+    
     return render_template('crear_producto.html')
 
 @app.route('/productos/editar/<id_producto>', methods=['GET', 'POST'])
@@ -127,13 +135,13 @@ def editar_producto(id_producto):
             flash('Producto actualizado exitosamente', 'success')
         else:
             flash('Error al actualizar el producto', 'error')
-        return redirect(url_for('listar_productos'))
+        return redirect(url_for('listar_ventas_productos'))
     
     producto = obtener_producto_por_id_Mongo(id_producto)
     if producto:
-        return render_template('editar_producto.html', producto=producto)
+        return render_template('modificar_producto.html', producto=producto)
     flash('Producto no encontrado', 'error')
-    return redirect(url_for('listar_productos'))
+    return redirect(url_for('listar_ventas_productos'))
 
 @app.route('/productos/eliminar/<id_producto>')
 def eliminar_producto(id_producto):
@@ -142,7 +150,7 @@ def eliminar_producto(id_producto):
         flash('Producto eliminado exitosamente', 'success')
     else:
         flash('Error al eliminar el producto', 'error')
-    return redirect(url_for('listar_productos'))
+    return redirect(url_for('listar_ventas_productos'))
 
 @app.route('/productos/<id_producto>')
 def ver_producto(id_producto):
@@ -150,7 +158,9 @@ def ver_producto(id_producto):
     if producto:
         return render_template('ver_producto.html', producto=producto)
     flash('Producto no encontrado', 'error')
-    return redirect(url_for('listar_productos'))
+    return redirect(url_for('listar_ventas_productos'))
+
+
 
 # Rutas para Dashboard
 @app.route('/dashboard')

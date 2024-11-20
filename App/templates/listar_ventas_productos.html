@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Información principal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            background-color: #d8d8d8;
+            padding: 10px;
+            border-radius: 14px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 42px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tr{
+            background-color: white;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: #000000;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-danger {
+            color: #000000;
+            background-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #b02a37;
+        }
+
+        .btn-secondary {
+            color: #000000;
+            background-color: #ffa600;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #333;
+            margin-top: 30px;
+        }
+
+        /* Estilos para separar y diferenciar secciones */
+        .ventas-section {
+            background-color: #d8d8d8;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+
+        .productos-section {
+            background-color: #d8d8d8;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+
+        /* Estilos para los mensajes */
+        .alert {
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .alert-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .alert-warning {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .alert-error {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* Botón de Dashboard */
+        .btn-dashboard {
+            background-color: #28a745;
+            margin-bottom: 34px;
+        }
+
+        .btn-dashboard:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Información Principal</h1>
+
+        <!-- Botón de Dashboard -->
+        <a class="btn btn-dashboard" href="{{ url_for('dashboard') }}" style="margin-top: 12px">Ir al Dashboard</a>
+
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %} {% endif %} {% endwith %}
+
+        <!-- Ventas -->
+        <div class="ventas-section">
+            <h2 class="section-title">Ventas</h2>
+            {% if ventas %}
+            <table>
+                <tr>
+                    <th>Venta N°</th>
+                    <th>Nombre del producto</th>
+                    <th>Precio del producto</th>
+                    <th>Cantidad</th>
+                    <th>Total de la venta</th>
+                    <th>Nombre del Cliente</th>
+                    <th>Fecha de la venta</th>
+                    <th>Acciones</th>
+                </tr>
+                {% for venta in ventas %}
+                <tr>
+                    <td>{{ venta[0] }}</td>
+                    <td>
+                        {{ productosVentas[venta[1]]['nombre'] if venta[1] in
+                        productosVentas else 'Producto no encontrado' }}
+                    </td>
+                    <td>
+                        {{ productosVentas[venta[1]]['precio'] if venta[1] in
+                        productosVentas else '0' }}
+                    </td>
+                    <td>{{ venta[2] }}</td>
+                    <td>
+                        ${{ (productosVentas[venta[1]]['precio'] if venta[1] in
+                        productosVentas else 0) * venta[2] }}
+                    </td>
+                    <td>{{ venta[3] }}</td>
+                    <td>{{ venta[4] }}</td>
+                    <td class="actions">
+                        <a class="btn btn-primary" href="{{ url_for('modificar_venta', id_venta=venta[0]) }}">Modificar</a>
+                        <form action="{{ url_for('eliminar_venta', id_venta=venta[0]) }}" method="POST"
+                            style="display: inline">
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <p>No hay ventas registradas.</p>
+            {% endif %}
+            <a class="btn btn-primary" href="{{ url_for('crear_venta') }}" style="margin-top: 12px">Crear Nueva Venta</a>
+        </div>
+
+        <!-- Productos -->
+        <div class="productos-section">
+            <h2 class="section-title">Productos</h2>
+            {% if productos %}
+            <table>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Stock Disponible</th>
+                    <th>Acciones</th>
+                </tr>
+                {% for producto in productos %}
+                <tr>
+                    <td>{{ producto.nombre }}</td>
+                    <td>${{ producto.precio }}</td>
+                    <td>{{ producto.cantidad_stock }}</td>
+                    <td class="actions">
+                        <a class="btn btn-secondary" href="{{ url_for('ver_producto', id_producto=producto._id) }}">Ver</a>
+                        <a class="btn btn-primary"
+                            href="{{ url_for('editar_producto', id_producto=producto._id) }}">Modificar</a>
+
+                        <a class="btn btn-danger"
+                            href="{{ url_for('eliminar_producto', id_producto=producto._id) }}">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <p>No hay productos registrados.</p>
+            {% endif %}
+            <a class="btn btn-primary" href="{{ url_for('crear_producto') }}" style="margin-top: 12px">Crear Nuevo Producto</a>
+        </div>
+    </div>
+    <script>
+        setTimeout(() => {
+            const alerts = document.querySelectorAll(".alert");
+            alerts.forEach((alert) => {
+                alert.style.display = "none";
+            });
+        }, 5000);
+    </script>
+</body>
+
+</html>
