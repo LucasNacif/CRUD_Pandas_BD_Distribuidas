@@ -1,6 +1,7 @@
 import base64
 import io
 from flask import Flask, render_template, request, redirect, send_file, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, send_file, url_for, flash, make_response
 import pandas as pd 
 from io import BytesIO
 from bson import ObjectId, errors as bson_errors
@@ -8,6 +9,7 @@ import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import pdfkit
 
 from App.crud_mysql import (
     crear_venta_MySql,
@@ -31,7 +33,7 @@ app.secret_key = 'tu_clave_secreta_aqui'
 def index():
     return redirect(url_for('listar_ventas_productos'))
 
-# Rutas para Ventas
+# SECCION DE RUTAS PARA VENTAS
 @app.route('/ventas_productos')
 def listar_ventas_productos():
     ventas = obtener_ventas_MySql()
@@ -103,7 +105,7 @@ def eliminar_venta(id_venta):
     return redirect(url_for('listar_ventas_productos'))
 
 
-# Rutas para Productos
+# SECCION DE RUTAS PARA PRODUCTOS
 @app.route('/productos/crear', methods=['GET', 'POST'])
 def crear_producto():
     if request.method == 'POST':
@@ -157,7 +159,7 @@ def ver_producto(id_producto):
     flash('Producto no encontrado', 'error')
     return redirect(url_for('listar_ventas_productos'))
 
-# graficos
+# SECCION DE GRAFICOS PARA DASHBOARD
 def generar_grafico():
     productos = obtener_productos_Mongo()
 
@@ -196,7 +198,6 @@ def obtener_estadisticas_ventas(df):
         }
     }
     
-    # Información del DataFrame
     info_df = {
         'Tipos de datos': dict(df.dtypes),
         'Valores no nulos': dict(df.count())
@@ -206,7 +207,6 @@ def obtener_estadisticas_ventas(df):
 
 def generar_graficos_ventas(df):
 
-    # Gráfico de ventas por producto
     plt.figure(figsize=(10, 6))
     ventas_por_producto = df.groupby('nombre_producto')['cantidad'].sum()
     ventas_por_producto.plot(kind='bar')
@@ -216,14 +216,12 @@ def generar_graficos_ventas(df):
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
     
-    # Guardar gráfico de ventas en buffer
     buffer_ventas = io.BytesIO()
     plt.savefig(buffer_ventas, format='png')
     buffer_ventas.seek(0)
     grafico_ventas = base64.b64encode(buffer_ventas.getvalue()).decode()
     plt.close()
     
-    # Gráfico de productos (asumiendo que esta función ya existe)
     grafico_productos = generar_grafico()
     
     return grafico_productos, grafico_ventas
@@ -232,14 +230,12 @@ def generar_graficos_ventas(df):
 def generar_grafico_distribucion_ventas(df):
     plt.figure(figsize=(10, 6))
     
-    # Histograma de cantidades de venta
     plt.hist(df['cantidad'], bins=10, edgecolor='black')
     plt.title('Distribución de Cantidades de Venta')
     plt.xlabel('Cantidad Vendida')
     plt.ylabel('Frecuencia')
     plt.tight_layout()
     
-    # Guardar gráfico en buffer
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png')
     buffer.seek(0)
@@ -248,7 +244,7 @@ def generar_grafico_distribucion_ventas(df):
     
     return grafico_distribucion
 
-# Rutas para Dashboard
+# DASHBOARD
 @app.route('/dashboard')
 def dashboard():
     ventas = obtener_ventas_MySql()
@@ -298,6 +294,24 @@ def exportarExcel():
                         as_attachment=True, 
                         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     return redirect('/dashboard')
+# Configuración para Windows (ruta al ejecutable wkhtmltopdf)
+# Cambiá esta ruta según tu sistema
+PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=r"C:\Users\santo\Downloads\wkhtmltox-0.12.6-1.msvc2015-win64.exe")
+
+@app.route('/exportReport')
+def download_pdf():
+    # Renderizar el HTML de la página
+    rendered_html = render_template('dashboard.html')
+    
+    # Convertir el HTML a PDF
+    pdf = pdfkit.from_string(rendered_html, False, configuration=PDFKIT_CONFIG)
+
+    # Devolver el PDF como respuesta para descargar
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'attachment; filename="documento.pdf"'
+    return response
+
 
 @app.template_global()
 def get_producto(id_producto):
