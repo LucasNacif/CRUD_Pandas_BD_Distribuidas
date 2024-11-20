@@ -27,7 +27,7 @@ def eliminar_venta_MySql(id_venta):
         connection.close()
         return True
     else:
-        print("No se encontró la venta")
+        return False
 
 def actualizar_venta_MySql(id_venta, nombre_cliente):
     venta = obtener_venta_por_id_MySql(id_venta)

@@ -39,7 +39,6 @@ def allowed_file(filename):
 def index():
     return redirect(url_for('listar_ventas_productos'))
 
-# SECCION DE RUTAS PARA VENTAS
 @app.route('/ventas_productos')
 def listar_ventas_productos():
     ventas = obtener_ventas_MySql()
@@ -56,6 +55,7 @@ def listar_ventas_productos():
     productosVentas = {str(p['_id']): p for p in productos}
     return render_template('listar_ventas_productos.html', ventas=ventas, productos=productos, productosVentas=productosVentas)
 
+# SECCION DE RUTAS PARA VENTAS
 @app.route('/crear_venta', methods=['GET', 'POST'])
 def crear_venta():
     productos = obtener_productos_Mongo()
