@@ -236,43 +236,23 @@ def obtener_estadisticas_ventas(df):
     
     return estadisticas, info_df
 
-def generar_graficos_ventas(df):
-
-    plt.figure(figsize=(10, 6))
-    ventas_por_producto = df.groupby('nombre_producto')['cantidad'].sum()
-    ventas_por_producto.plot(kind='bar')
-    plt.title('Ventas Totales por Producto')
-    plt.xlabel('Producto')
-    plt.ylabel('Cantidad Vendida')
-    plt.xticks(rotation=45, ha='right')
-    plt.tight_layout()
-    
-    buffer_ventas = io.BytesIO()
-    plt.savefig(buffer_ventas, format='png')
-    buffer_ventas.seek(0)
-    grafico_ventas = base64.b64encode(buffer_ventas.getvalue()).decode()
-    plt.close()
-    
-    grafico_productos = generar_grafico()
-    
-    return grafico_productos, grafico_ventas
-
 def generar_grafico_distribucion_ventas(df):
+    # Generar el gráfico de distribución de ventas
     plt.figure(figsize=(10, 6))
-    
     plt.hist(df['cantidad'], bins=10, edgecolor='black')
     plt.title('Distribución de Cantidades de Venta')
     plt.xlabel('Cantidad Vendida')
     plt.ylabel('Frecuencia')
     plt.tight_layout()
-    
+
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png')
     buffer.seek(0)
     grafico_distribucion = base64.b64encode(buffer.getvalue()).decode()
     plt.close()
-    
+
     return grafico_distribucion
+
 
 # DASHBOARD
 @app.route('/dashboard')
@@ -304,7 +284,6 @@ def dashboard():
 
     # Obtener estadísticas y gráficos
     estadisticas, info_df = obtener_estadisticas_ventas(df)
-    grafico_productos, grafico_ventas = generar_graficos_ventas(df)
     grafico_distribucion = generar_grafico_distribucion_ventas(df)
     
     return render_template('pandas.html', 
@@ -314,7 +293,6 @@ def dashboard():
                          clientes_unicos=df['nombreCliente'].nunique(),
                          venta_promedio=df['cantidad'].mean(),
                          grafico_productos=grafico_productos,
-                         grafico_ventas=grafico_ventas,
                          grafico_distribucion=grafico_distribucion,
                          estadisticas=estadisticas,
                          info_df=info_df)

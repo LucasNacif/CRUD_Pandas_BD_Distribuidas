@@ -116,7 +116,7 @@
             </div>
             <div class="card-body">
                 {% if df.empty %}
-                No hay ventas disponibles
+                No hay clientes disponibles
                 {% else %}
                 <table class="table table-sm">
                     <thead>
@@ -149,7 +149,7 @@
             </div>
             <div class="card-body">
                 {% if df.empty %}
-                No hay ventas disponibles
+                No hay productos disponibles
                 {% else %}
                 <table class="table table-sm">
                     <thead>
@@ -183,7 +183,7 @@
 
                 <div class="card-body">
                     {% if df.empty %}
-                    No hay ventas disponibles
+                    No hay estadísticas disponibles
                     {% else %}
                     {% for seccion, datos in estadisticas.items() %}
                     <h6>{{ seccion }}</h6>
@@ -207,7 +207,7 @@
                     <h5 class="mb-0">Distribución de Ventas</h5>
                 </div>
                 <div class="card-body">
-                    <img src="data:image/png;base64,{{ grafico_distribucion }}" alt="Distribución de Ventas"
+                    <img src="data:image/png;base64,{{ grafico_distribucion }}" alt="No hay ventas disponibles"
                         class="img-fluid">
                 </div>
             </div>
