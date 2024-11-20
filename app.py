@@ -27,7 +27,7 @@ from App.crud_mongo import (
 )
 app = Flask(__name__, template_folder='App/templates')
 app.secret_key = 'tu_clave_secreta_aqui'
-
+PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=r"C:\Users\santo\Downloads\wkhtmltox-0.12.6-1.msvc2015-win64.exe")
 
 @app.route('/')
 def index():
@@ -294,9 +294,7 @@ def exportarExcel():
                         as_attachment=True, 
                         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     return redirect('/dashboard')
-# Configuración para Windows (ruta al ejecutable wkhtmltopdf)
-# Cambiá esta ruta según tu sistema
-PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=r"C:\Users\santo\Downloads\wkhtmltox-0.12.6-1.msvc2015-win64.exe")
+
 
 @app.route('/exportReport')
 def download_pdf():
