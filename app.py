@@ -391,7 +391,8 @@ def procesarExcel():
 
         for _, row in df.iterrows():
             crear_venta_MySql(row['id_producto'], row['cantidad'], row['nombreCliente'])
-            return True
+        
+        return True
 
     except Exception as e:
         flash(f'Error al importar las ventas: {str(e)}', 'error')

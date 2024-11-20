@@ -227,6 +227,7 @@
             {% if productos %}
             <table>
                 <tr>
+                    <th>N°</th>
                     <th>Nombre</th>
                     <th>Precio</th>
                     <th>Stock Disponible</th>
@@ -234,6 +235,7 @@
                 </tr>
                 {% for producto in productos %}
                 <tr>
+                    <td>{{ producto._id }}</td>
                     <td>{{ producto.nombre }}</td>
                     <td>${{ producto.precio }}</td>
                     <td>{{ producto.cantidad_stock }}</td>
