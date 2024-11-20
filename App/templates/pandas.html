@@ -41,7 +41,6 @@
 <div class="card mb-4">
     <a href="{{ url_for('listar_ventas_productos') }}" class="btn btn-primary">Informacion Principal</a>
     <a href="{{ url_for('exportarExcel') }}" class="btn btn-success">Exportar a Excel</a>
-    <a href="{{ url_for('exportReport')}}" class="btn btn-success"> Exportar reporte</a>
 </div>
 
 <!-- Importar Ventas y Productos -->
@@ -177,37 +176,45 @@
     </div>
 
     <div class="row">
+
         <div class="col-md-6">
             <div class="card mb-4">
                 <div class="card-header">
-                <h5 class="mb-0">Estadísticas de Ventas</h5>
-            </div>
-            <div class="card-body">
-                {% for seccion, datos in estadisticas.items() %}
-                <h6>{{ seccion }}</h6>
-                <table class="table">
-                    {% for nombre, valor in datos.items() %}
+                    <h5 class="mb-0">Estadísticas de Ventas</h5>
+                </div>
+
+                <div class="card-body">
+                    {% if df.empty %}
+                    No hay ventas disponibles
+                    {% else %}
+                    {% for seccion, datos in estadisticas.items() %}
+                    <h6>{{ seccion }}</h6>
+                    <table class="table">
+                        {% for nombre, valor in datos.items() %}
                         <tr>
                             <td>{{ nombre }}</td>
                             <td>{{ valor }}</td>
                         </tr>
                         {% endfor %}
                     </table>
-                {% endfor %}
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Distribución de Ventas</h5>
+                </div>
+                <div class="card-body">
+                    <img src="data:image/png;base64,{{ grafico_distribucion }}" alt="Distribución de Ventas"
+                        class="img-fluid">
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Distribución de Ventas</h5>
-            </div>
-            <div class="card-body">
-                <img src="data:image/png;base64,{{ grafico_distribucion }}" alt="Distribución de Ventas" class="img-fluid">
-            </div>
-        </div>
-    </div>
-</div>
 
     <div class="col-md-6">
         <div class="card mb-4">
@@ -220,6 +227,7 @@
             </div>
         </div>
     </div>
+
 </div>
 
 {% endblock %}

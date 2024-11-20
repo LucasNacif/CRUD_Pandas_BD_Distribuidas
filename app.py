@@ -11,7 +11,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from werkzeug.utils import secure_filename
 import os
-import pdfkit
 
 
 from App.crud_mysql import (
@@ -32,12 +31,8 @@ app = Flask(__name__, template_folder='App/templates')
 app.secret_key = 'claveUltraSuperSecretaQueNadieConoceyNadieVe'
 
 ALLOWED_EXTENSIONS = {'xlsx'}
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=r"C:\Users\santo\Downloads\wkhtmltox-0.12.6-1.msvc2015-win64.exe")
 
 
 @app.route('/')
@@ -185,7 +180,18 @@ def generar_grafico():
     productos = obtener_productos_Mongo()
 
     if not productos:
-       return []
+        # Si no hay productos, generar una imagen predeterminada o retornar un mensaje
+        plt.figure(figsize=(10, 7))
+        plt.text(0.5, 0.5, 'No hay productos disponibles', ha='center', va='center', fontsize=12)
+        plt.axis('off')
+
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png', bbox_inches='tight')
+        buffer.seek(0)
+        imagen = base64.b64encode(buffer.getvalue()).decode()
+        plt.close()
+
+        return imagen
     
     # Si hay productos, proceder a crear el gráfico
     df = pd.DataFrame(productos)
@@ -202,7 +208,6 @@ def generar_grafico():
     plt.close()
 
     return imagen
-
 
 def obtener_estadisticas_ventas(df):
 
@@ -251,7 +256,6 @@ def generar_graficos_ventas(df):
     grafico_productos = generar_grafico()
     
     return grafico_productos, grafico_ventas
-
 
 def generar_grafico_distribucion_ventas(df):
     plt.figure(figsize=(10, 6))
@@ -331,22 +335,6 @@ def exportarExcel():
                         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     return redirect('/dashboard')
 
-
-@app.route('/exportReport')
-def download_pdf():
-    # Renderizar el HTML de la página
-    rendered_html = render_template('dashboard.html')
-    
-    # Convertir el HTML a PDF
-    pdf = pdfkit.from_string(rendered_html, False, configuration=PDFKIT_CONFIG)
-
-    # Devolver el PDF como respuesta para descargar
-    response = make_response(pdf)
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'attachment; filename="documento.pdf"'
-    return response
-
-
 @app.template_global()
 def get_producto(id_producto):
     try:
@@ -408,7 +396,7 @@ def procesarExcel():
     except Exception as e:
         flash(f'Error al importar las ventas: {str(e)}', 'error')
         return True
-            
+         
 @app.route('/importar_productos', methods=['POST'])
 def importar_productos():
     if 'file' not in request.files:
