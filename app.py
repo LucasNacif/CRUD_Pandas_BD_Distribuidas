@@ -400,32 +400,48 @@ def procesarExcel():
          
 @app.route('/importar_productos', methods=['POST'])
 def importar_productos():
+    # Verificar si el archivo fue enviado
     if 'file' not in request.files:
-        flash('No se seleccionó ningún archivo', 'error')
+        flash('No se ha seleccionado ningún archivo.', 'error')
         return redirect(request.url)
-    
+
     file = request.files['file']
-    
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        filepath = os.path.join('uploads', filename)
-        file.save(filepath)
 
-        try:
-            # Leer el archivo Excel con pandas
-            df = pd.read_excel(filepath)
-            for _, row in df.iterrows():
-                crear_producto_Mongo(row['nombre_producto'], row['precio_producto'], row['cantidad_producto'])
+    if file.filename == '':
+        flash('No se ha seleccionado un archivo.', 'error')
+        return redirect(request.url)
 
-            flash('Productos importados exitosamente', 'success')
-            return redirect(url_for('listar_ventas_productos'))
-        except Exception as e:
-            flash(f'Error al importar los productos: {str(e)}', 'error')
-            return redirect(request.url)
+    # Crear el directorio 'uploads' si no existe
+    upload_folder = os.path.join(os.getcwd(), 'uploads')
+    if not os.path.exists(upload_folder):
+        os.makedirs(upload_folder)
 
-    flash('Formato de archivo no permitido', 'error')
-    return redirect(request.url)
+    # Guardar el archivo
+    filepath = os.path.join(upload_folder, 'productos.xlsx')
+    file.save(filepath)
 
+    exito = procesarExcelProductos()
+
+    if exito:
+        flash('Se han importado los productos correctamente.', 'success')
+    else:
+        flash('Ha ocurrido un error al importar los productos.', 'error')
+        
+    return redirect(url_for('dashboard'))
+
+
+def procesarExcelProductos():
+    try:
+        df = pd.read_excel('uploads/productos.xlsx')
+
+        for _, row in df.iterrows():
+            crear_producto_Mongo(row['nombre'], row['precio'], row['cantidad_stock'])
+        
+        return True
+
+    except Exception as e:
+        flash(f'Error al importar los productos: {str(e)}', 'error')
+        return False
 
 
 if __name__ == '__main__':

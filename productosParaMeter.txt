@@ -1,0 +1,62 @@
+[
+  {
+    "_id": { "$oid": "673d509143a0b377f4f6de01" },
+    "nombre": "Pan",
+    "precio": 2000,
+    "cantidad_stock": 0
+  },
+  {
+    "_id": { "$oid": "673d509143a0b377f4f6de02" },
+    "nombre": "Leche",
+    "precio": 1500,
+    "cantidad_stock": 50
+  },
+  {
+    "_id": { "$oid": "673d509143a0b377f4f6de03" },
+    "nombre": "Arroz",
+    "precio": 1200,
+    "cantidad_stock": 30
+  },
+  {
+    "_id": { "$oid": "673d509143a0b377f4f6de04" },
+    "nombre": "Huevos",
+    "precio": 1800,
+    "cantidad_stock": 100
+  },
+  {
+    "_id": { "$oid": "673d509143a0b377f4f6de05" },
+    "nombre": "Aceite",
+    "precio": 2500,
+    "cantidad_stock": 20
+  },
+  {
+    "_id": { "$oid": "673d509143a0b377f4f6de06" },
+    "nombre": "Salchichas",
+    "precio": 2200,
+    "cantidad_stock": 40
+  },
+  {
+    "_id": { "$oid": "673d509143a0b377f4f6de07" },
+    "nombre": "Pasta",
+    "precio": 1000,
+    "cantidad_stock": 60
+  },
+  {
+    "_id": { "$oid": "673d509143a0b377f4f6de08" },
+    "nombre": "Tomate",
+    "precio": 1200,
+    "cantidad_stock": 80
+  },
+  {
+    "_id": { "$oid": "673d509143a0b377f4f6de09" },
+    "nombre": "Jamon",
+    "precio": 2500,
+    "cantidad_stock": 25
+  },
+  {
+    "_id": { "$oid": "673d509143a0b377f4f6de10" },
+    "nombre": "Azúcar",
+    "precio": 900,
+    "cantidad_stock": 150
+  }
+]

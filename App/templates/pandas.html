@@ -38,7 +38,7 @@
 </div>
 
 
-<div class="card mb-4">
+<div class="cardBotonesPrincipales">
     <a href="{{ url_for('listar_ventas_productos') }}" class="btn btn-primary">Informacion Principal</a>
     <a href="{{ url_for('exportarExcel') }}" class="btn btn-success">Exportar a Excel</a>
 </div>
@@ -83,8 +83,7 @@
                 <table class="table table-striped table-hover">
                     <thead class="table-dark">
                         <tr>
-                            <th>ID</th>
-                            <th>Producto</th>
+                            <th>N° de venta</th>
                             <th>Nombre Producto</th>
                             <th>Cantidad</th>
                             <th>Cliente</th>
@@ -95,7 +94,6 @@
                         {% for index, row in df.iterrows() %}
                         <tr>
                             <td>{{ row['id_venta'] }}</td>
-                            <td>{{ row['id_producto'] }}</td>
                             <td>{{ row['nombre_producto'] }}</td>
                             <td>{{ row['cantidad'] }}</td>
                             <td>{{ row['nombreCliente'] }}</td>
