@@ -21,22 +21,22 @@ from App.crud_mongo import (
 app = Flask(__name__, template_folder='App/templates')
 app.secret_key = 'tu_clave_secreta_aqui'
 
+
 @app.route('/')
 def index():
     return redirect(url_for('listar_ventas_productos'))
 
+# Rutas para Ventas
 @app.route('/ventas_productos')
 def listar_ventas_productos():
-    # Supongamos que ya tienes funciones para obtener estas listas
     ventas = obtener_ventas_MySql()
     productosVentas = {str(p['_id']): p for p in obtener_productos_Mongo()}
     productos = obtener_productos_Mongo()
     return render_template('listar_ventas_productos.html', ventas=ventas, productos=productos, productosVentas=productosVentas)
 
-
 @app.route('/crear_venta', methods=['GET', 'POST'])
 def crear_venta():
-    productos = obtener_productos_Mongo()  # Obtener lista de productos
+    productos = obtener_productos_Mongo()
 
     if not productos:
         flash('No hay productos disponibles para vender. Por favor, agregue productos primero.', 'error')
@@ -44,11 +44,11 @@ def crear_venta():
 
     if request.method == 'POST':
         try:
-            id_producto = request.form['id_producto']  # ID del producto seleccionado
-            cantidad = int(request.form['cantidad'])  # Cantidad seleccionada
-            nombre_cliente = request.form['nombre_cliente']  # Nombre del cliente
+            id_producto = request.form['id_producto']
+            cantidad = int(request.form['cantidad'])
+            nombre_cliente = request.form['nombre_cliente']
             
-            producto = obtener_producto_por_id_Mongo(id_producto)  # Obtener producto por ID
+            producto = obtener_producto_por_id_Mongo(id_producto)
             
             if not producto:
                 flash('Producto no encontrado', 'error')
@@ -57,11 +57,7 @@ def crear_venta():
             if producto['cantidad_stock'] < cantidad:
                 flash(f'No hay suficiente stock disponible. Stock actual: {producto["cantidad_stock"]}', 'error')
                 return redirect(url_for('crear_venta'))
-            
-            # Crear la venta en la base de datos MySQL
             crear_venta_MySql(id_producto, cantidad, nombre_cliente)
-            
-            # Actualizar el stock del producto
             nuevo_stock = producto['cantidad_stock'] - cantidad
             actualizar_producto_Mongo(
                 id_producto,
@@ -77,9 +73,7 @@ def crear_venta():
             flash('Cantidad inválida', 'error')
         except Exception as e:
             flash(f'Error al crear la venta: {str(e)}', 'error')
-
     return render_template('crear_venta.html', productos=productos)
-
 
 @app.route('/ventas/modificar/<int:id_venta>', methods=['GET', 'POST'])
 def modificar_venta(id_venta):
@@ -94,7 +88,6 @@ def modificar_venta(id_venta):
     producto = obtener_producto_por_id_Mongo(venta[1]) 
     return render_template('modificar_venta.html', venta=venta, producto=producto)
 
-
 @app.route('/ventas/eliminar/<int:id_venta>', methods=['POST'])
 def eliminar_venta(id_venta):
     exito = eliminar_venta_MySql(id_venta)
@@ -105,8 +98,7 @@ def eliminar_venta(id_venta):
     return redirect(url_for('listar_ventas_productos'))
 
 
-
-# # Rutas para Productos
+# Rutas para Productos
 @app.route('/productos/crear', methods=['GET', 'POST'])
 def crear_producto():
     if request.method == 'POST':
@@ -159,7 +151,6 @@ def ver_producto(id_producto):
         return render_template('ver_producto.html', producto=producto)
     flash('Producto no encontrado', 'error')
     return redirect(url_for('listar_ventas_productos'))
-
 
 
 # Rutas para Dashboard

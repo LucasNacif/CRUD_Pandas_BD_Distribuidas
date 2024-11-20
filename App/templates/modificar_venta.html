@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -122,17 +123,20 @@
                 padding: 15px;
             }
 
-            .btn, .back-link {
+            .btn,
+            .back-link {
                 width: 100%;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Modificar Venta</h1>
-        <p class="info-message">Solo se puede modificar el nombre del cliente. Los demás datos son solo para visualización.</p>
-        
+        <p class="info-message">Solo se puede modificar el nombre del cliente. Los demás datos son solo para
+            visualización.</p>
+
         <form method="POST">
             <div class="form-group">
                 <label for="nombre_cliente">Nombre del Cliente:</label>
@@ -141,13 +145,13 @@
 
             <div class="form-group">
                 <h2>Datos de la Venta</h2>
-                
+
                 <label for="producto_nombre">Nombre del Producto:</label>
                 <input type="text" name="producto_nombre" value="{{ producto.nombre }}" readonly>
-                
+
                 <label for="producto_precio">Precio del Producto:</label>
                 <input type="text" name="producto_precio" value="{{ producto.precio }}" readonly>
-                
+
                 <label for="cantidad">Cantidad:</label>
                 <input type="text" name="cantidad" value="{{ venta[2] }}" readonly>
 
@@ -162,4 +166,5 @@
         </form>
     </div>
 </body>
+
 </html>

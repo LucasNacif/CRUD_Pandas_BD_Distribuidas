@@ -52,7 +52,7 @@
             color: white;
         }
 
-        tr{
+        tr {
             background-color: white;
         }
 
@@ -109,7 +109,6 @@
             margin-top: 30px;
         }
 
-        /* Estilos para separar y diferenciar secciones */
         .ventas-section {
             background-color: #d8d8d8;
             padding: 20px;
@@ -127,7 +126,6 @@
             width: 100%;
         }
 
-        /* Estilos para los mensajes */
         .alert {
             padding: 10px;
             margin-top: 15px;
@@ -150,7 +148,6 @@
             color: white;
         }
 
-        /* Botón de Dashboard */
         .btn-dashboard {
             background-color: #28a745;
             margin-bottom: 34px;
@@ -208,7 +205,8 @@
                     <td>{{ venta[3] }}</td>
                     <td>{{ venta[4] }}</td>
                     <td class="actions">
-                        <a class="btn btn-primary" href="{{ url_for('modificar_venta', id_venta=venta[0]) }}">Modificar</a>
+                        <a class="btn btn-primary"
+                            href="{{ url_for('modificar_venta', id_venta=venta[0]) }}">Modificar</a>
                         <form action="{{ url_for('eliminar_venta', id_venta=venta[0]) }}" method="POST"
                             style="display: inline">
                             <button type="submit" class="btn btn-danger">Eliminar</button>
@@ -220,7 +218,8 @@
             {% else %}
             <p>No hay ventas registradas.</p>
             {% endif %}
-            <a class="btn btn-primary" href="{{ url_for('crear_venta') }}" style="margin-top: 12px">Crear Nueva Venta</a>
+            <a class="btn btn-primary" href="{{ url_for('crear_venta') }}" style="margin-top: 12px">Crear Nueva
+                Venta</a>
         </div>
 
         <!-- Productos -->
@@ -240,7 +239,8 @@
                     <td>${{ producto.precio }}</td>
                     <td>{{ producto.cantidad_stock }}</td>
                     <td class="actions">
-                        <a class="btn btn-secondary" href="{{ url_for('ver_producto', id_producto=producto._id) }}">Ver</a>
+                        <a class="btn btn-secondary"
+                            href="{{ url_for('ver_producto', id_producto=producto._id) }}">Ver</a>
                         <a class="btn btn-primary"
                             href="{{ url_for('editar_producto', id_producto=producto._id) }}">Modificar</a>
 
@@ -253,7 +253,8 @@
             {% else %}
             <p>No hay productos registrados.</p>
             {% endif %}
-            <a class="btn btn-primary" href="{{ url_for('crear_producto') }}" style="margin-top: 12px">Crear Nuevo Producto</a>
+            <a class="btn btn-primary" href="{{ url_for('crear_producto') }}" style="margin-top: 12px">Crear Nuevo
+                Producto</a>
         </div>
     </div>
     <script>
