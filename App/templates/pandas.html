@@ -37,50 +37,80 @@
     </div>
 </div>
 
+
 <div class="card mb-4">
     <a href="{{ url_for('listar_ventas_productos') }}" class="btn btn-primary">Informacion Principal</a>
     <a href="{{ url_for('exportarExcel') }}" class="btn btn-success">Exportar a Excel</a>
     <a href="{{ url_for('exportReport')}}" class="btn btn-success"> Exportar reporte</a>
 </div>
 
-<!-- Tabla de Datos -->
-<div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Detalle de Ventas</h5>
-
-
+<!-- Importar Ventas y Productos -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h5 class="card-title">Importar Ventas</h5>
+            <form action="{{ url_for('importar_ventas') }}" method="POST" enctype="multipart/form-data"
+                class="d-flex flex-column">
+                <label for="file" class="mb-2">Seleccionar archivo de ventas:</label>
+                <input type="file" name="file" accept=".xlsx" required class="mb-3">
+                <button type="submit" class="btn btn-warning btn-block">Importar Ventas</button>
+            </form>
+        </div>
     </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Producto</th>
-                        <th>Nombre Producto</th>
-                        <th>Cantidad</th>
-                        <th>Cliente</th>
-                        <th>Fecha</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for index, row in df.iterrows() %}
-                    <tr>
-                        <td>{{ row['id_venta'] }}</td>
-                        <td>{{ row['id_producto'] }}</td>
-                        <td>{{ row['nombre_producto'] }}</td>
-                        <td>{{ row['cantidad'] }}</td>
-                        <td>{{ row['nombreCliente'] }}</td>
-                        <td>{{ row['fecha_formato'] }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h5 class="card-title">Importar Productos</h5>
+            <form action="{{ url_for('importar_productos') }}" method="POST" enctype="multipart/form-data"
+                class="d-flex flex-column">
+                <label for="file" class="mb-2">Seleccionar archivo de productos:</label>
+                <input type="file" name="file" accept=".xlsx" required class="mb-3">
+                <button type="submit" class="btn btn-warning btn-block">Importar Productos</button>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- Análisis por Cliente -->
+<div class="row">
+    <!-- Tabla de Detalle de Ventas (dentro de Top Clientes) -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Detalle de Ventas</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                {% if df.empty %}
+                No hay ventas disponibles
+                {% else %}
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Producto</th>
+                            <th>Nombre Producto</th>
+                            <th>Cantidad</th>
+                            <th>Cliente</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for index, row in df.iterrows() %}
+                        <tr>
+                            <td>{{ row['id_venta'] }}</td>
+                            <td>{{ row['id_producto'] }}</td>
+                            <td>{{ row['nombre_producto'] }}</td>
+                            <td>{{ row['cantidad'] }}</td>
+                            <td>{{ row['nombreCliente'] }}</td>
+                            <td>{{ row['fecha_formato'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-md-6">
         <div class="card mb-4">
@@ -88,6 +118,9 @@
                 <h5 class="mb-0">Top Clientes</h5>
             </div>
             <div class="card-body">
+                {% if df.empty %}
+                No hay ventas disponibles
+                {% else %}
                 <table class="table table-sm">
                     <thead>
                         <tr>
@@ -96,20 +129,21 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for cliente, total in df.groupby('nombreCliente')['id_venta'].nunique().sort_values(ascending=False).head().items() %}
+                        {% for cliente, total in
+                        df.groupby('nombreCliente')['id_venta'].nunique().sort_values(ascending=False).head().items() %}
                         <tr>
                             <td>{{ cliente }}</td>
                             <td>{{ total }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
-                    
                 </table>
+                {% endif %}
             </div>
         </div>
+
+
     </div>
-
-
 
     <div class="col-md-6">
         <div class="card mb-4">
@@ -117,6 +151,9 @@
                 <h5 class="mb-0">Productos Más Vendidos</h5>
             </div>
             <div class="card-body">
+                {% if df.empty %}
+                No hay ventas disponibles
+                {% else %}
                 <table class="table table-sm">
                     <thead>
                         <tr>
@@ -134,6 +171,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -177,9 +215,11 @@
                 <h5 class="mb-0">Distribución de Stock</h5>
             </div>
             <div class="card-body">
-                <img src="data:image/png;base64,{{ grafico_productos }}" alt="Gráfico de Stock de Productos" class="img-fluid">
+                <img src="data:image/png;base64,{{ grafico_productos }}" alt="Gráfico de Stock de Productos"
+                    class="img-fluid w-100">
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}

@@ -165,7 +165,6 @@
 
         <!-- Botón de Dashboard -->
         <a class="btn btn-dashboard" href="{{ url_for('dashboard') }}" style="margin-top: 12px">Ir al Dashboard</a>
-
         {% with messages = get_flashed_messages(with_categories=true) %} {% if
         messages %} {% for category, message in messages %}
         <div class="alert alert-{{ category }}">{{ message }}</div>

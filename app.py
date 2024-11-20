@@ -9,7 +9,10 @@ import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from werkzeug.utils import secure_filename
+import os
 import pdfkit
+
 
 from App.crud_mysql import (
     crear_venta_MySql,
@@ -26,8 +29,16 @@ from App.crud_mongo import (
     actualizar_producto_Mongo
 )
 app = Flask(__name__, template_folder='App/templates')
-app.secret_key = 'tu_clave_secreta_aqui'
+app.secret_key = 'claveUltraSuperSecretaQueNadieConoceyNadieVe'
+
+ALLOWED_EXTENSIONS = {'xlsx'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=r"C:\Users\santo\Downloads\wkhtmltox-0.12.6-1.msvc2015-win64.exe")
+
 
 @app.route('/')
 def index():
@@ -37,8 +48,17 @@ def index():
 @app.route('/ventas_productos')
 def listar_ventas_productos():
     ventas = obtener_ventas_MySql()
-    productosVentas = {str(p['_id']): p for p in obtener_productos_Mongo()}
     productos = obtener_productos_Mongo()
+    
+    if not productos:
+        flash('No hay productos disponibles. Por favor, agregue productos primero.', 'warning')
+        return render_template('listar_ventas_productos.html', ventas=ventas, productos=productos)
+
+    if not ventas:
+        flash('No hay ventas registradas aún.', 'warning')
+        return render_template('listar_ventas_productos.html', ventas=ventas, productos=productos)
+    
+    productosVentas = {str(p['_id']): p for p in productos}
     return render_template('listar_ventas_productos.html', ventas=ventas, productos=productos, productosVentas=productosVentas)
 
 @app.route('/crear_venta', methods=['GET', 'POST'])
@@ -159,10 +179,15 @@ def ver_producto(id_producto):
     flash('Producto no encontrado', 'error')
     return redirect(url_for('listar_ventas_productos'))
 
-# SECCION DE GRAFICOS PARA DASHBOARD
+
+# Rutas para Dashboard
 def generar_grafico():
     productos = obtener_productos_Mongo()
 
+    if not productos:
+       return []
+    
+    # Si hay productos, proceder a crear el gráfico
     df = pd.DataFrame(productos)
 
     plt.figure(figsize=(10, 7))
@@ -177,6 +202,7 @@ def generar_grafico():
     plt.close()
 
     return imagen
+
 
 def obtener_estadisticas_ventas(df):
 
@@ -248,19 +274,30 @@ def generar_grafico_distribucion_ventas(df):
 @app.route('/dashboard')
 def dashboard():
     ventas = obtener_ventas_MySql()
+    grafico_productos = generar_grafico()
     
+    if not ventas:
+        flash('No hay ventas registradas. Realice una venta para ver estadísticas.', 'warning')
+        df = pd.DataFrame(ventas, columns=[])
+        return render_template('pandas.html', ventas=[], total_ventas=0, total_productos=0, clientes_unicos=0, venta_promedio=0,  grafico_productos=grafico_productos, df=df)
+
     df = pd.DataFrame(ventas, columns=['id_venta', 'id_producto', 'cantidad', 'nombreCliente', 'fecha'])
-    
     df['fecha'] = pd.to_datetime(df['fecha'])
     
+
     def get_producto_nombre(id_producto):
         producto = obtener_producto_por_id_Mongo(id_producto)
-        return producto.get('nombre', 'Desconocido')
+        if producto:
+            return producto['nombre']
+        else:
+            return('Desconocido')
+
     
     df['nombre_producto'] = df['id_producto'].apply(get_producto_nombre)
     
     df['fecha_formato'] = df['fecha'].dt.strftime('%Y-%m-%d %H:%M:%S')
     
+
     # Obtener estadísticas y gráficos
     estadisticas, info_df = obtener_estadisticas_ventas(df)
     grafico_productos, grafico_ventas = generar_graficos_ventas(df)
@@ -277,7 +314,6 @@ def dashboard():
                          grafico_distribucion=grafico_distribucion,
                          estadisticas=estadisticas,
                          info_df=info_df)
-
 
 @app.route('/export')
 def exportarExcel():
@@ -326,6 +362,81 @@ def get_producto(id_producto):
     except Exception as e:
         print(f"Error al obtener producto: {e}")
         return {"nombre": "Error al obtener producto"}
+
+
+# Rutas para importar datos con excel
+@app.route('/importar_ventas', methods=['POST'])
+def importar_ventas():
+    # Verificar si el archivo fue enviado
+    if 'file' not in request.files:
+        flash('No se ha seleccionado ningún archivo.', 'error')
+        return redirect(request.url)
+
+    file = request.files['file']
+    
+    if file.filename == '':
+        flash('No se ha seleccionado un archivo.', 'error')
+        return redirect(request.url)
+
+    # Crear el directorio 'uploads' si no existe
+    upload_folder = os.path.join(os.getcwd(), 'uploads')
+    if not os.path.exists(upload_folder):
+        os.makedirs(upload_folder)
+
+    # Guardar el archivo
+    filepath = os.path.join(upload_folder, 'ventas.xlsx')
+    file.save(filepath)
+    
+    exito = procesarExcel()
+
+    if exito:
+        flash('Se han importado los datos correctamente.', 'success')
+    else:
+        flash('Ha ocurrido un error al importar los datos.', 'error')
+        
+    return redirect(url_for('dashboard'))
+
+def procesarExcel():
+    try:
+        # Leer el archivo Excel con pandas
+        df = pd.read_excel('uploads/ventas.xlsx')
+
+        for _, row in df.iterrows():
+            crear_venta_MySql(row['id_producto'], row['cantidad'], row['nombreCliente'])
+            return True
+
+    except Exception as e:
+        flash(f'Error al importar las ventas: {str(e)}', 'error')
+        return True
+            
+@app.route('/importar_productos', methods=['POST'])
+def importar_productos():
+    if 'file' not in request.files:
+        flash('No se seleccionó ningún archivo', 'error')
+        return redirect(request.url)
+    
+    file = request.files['file']
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join('uploads', filename)
+        file.save(filepath)
+
+        try:
+            # Leer el archivo Excel con pandas
+            df = pd.read_excel(filepath)
+            for _, row in df.iterrows():
+                crear_producto_Mongo(row['nombre_producto'], row['precio_producto'], row['cantidad_producto'])
+
+            flash('Productos importados exitosamente', 'success')
+            return redirect(url_for('listar_ventas_productos'))
+        except Exception as e:
+            flash(f'Error al importar los productos: {str(e)}', 'error')
+            return redirect(request.url)
+
+    flash('Formato de archivo no permitido', 'error')
+    return redirect(request.url)
+
 
 
 if __name__ == '__main__':
