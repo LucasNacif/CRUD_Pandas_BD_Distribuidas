@@ -95,14 +95,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for cliente, total in
-                        df.groupby('nombreCliente')['cantidad'].sum().sort_values(ascending=False).head().items() %}
+                        {% for cliente, total in df.groupby('nombreCliente')['id_venta'].nunique().sort_values(ascending=False).head().items() %}
                         <tr>
                             <td>{{ cliente }}</td>
                             <td>{{ total }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
+                    
                 </table>
             </div>
         </div>

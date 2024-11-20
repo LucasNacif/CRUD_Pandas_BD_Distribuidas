@@ -163,7 +163,7 @@ def dashboard():
     df['fecha'] = pd.to_datetime(df['fecha'])
     
     def get_producto_nombre(id_producto):
-        producto = get_producto(id_producto)
+        producto = obtener_producto_por_id_Mongo(id_producto)
         return producto.get('nombre', 'Desconocido')
     
     df['nombre_producto'] = df['id_producto'].apply(get_producto_nombre)
