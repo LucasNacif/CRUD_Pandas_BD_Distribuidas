@@ -1,8 +1,11 @@
+import base64
+import io
 from flask import Flask, render_template, request, redirect, send_file, url_for, flash, jsonify
 import pandas as pd 
 from io import BytesIO
 from bson import ObjectId, errors as bson_errors
-from datetime import datetime
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 from App.crud_mysql import (
     crear_venta_MySql,
@@ -153,6 +156,24 @@ def ver_producto(id_producto):
     return redirect(url_for('listar_ventas_productos'))
 
 
+def generar_grafico():
+    productos = obtener_productos_Mongo()
+
+    df = pd.DataFrame(productos)
+
+    plt.figure(figsize=(10, 7))
+    plt.pie(df['cantidad_stock'], labels=df['nombre'], autopct='%1.1f%%', startangle=90)
+    plt.title('Distribución de Stock de Productos')
+    plt.axis('equal')
+
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight')
+    buffer.seek(0)
+    imagen = base64.b64encode(buffer.getvalue()).decode()
+    plt.close()
+
+    return imagen
+
 # Rutas para Dashboard
 @app.route('/dashboard')
 def dashboard():
@@ -170,12 +191,16 @@ def dashboard():
     
     df['fecha_formato'] = df['fecha'].dt.strftime('%Y-%m-%d %H:%M:%S')
     
+    grafico_productos = generar_grafico()
+    
     return render_template('pandas.html', 
                          df=df,
                          total_ventas=len(df),
                          total_productos=df['cantidad'].sum(),
                          clientes_unicos=df['nombreCliente'].nunique(),
-                         venta_promedio=df['cantidad'].mean())
+                         venta_promedio=df['cantidad'].mean(),
+                         grafico_productos=grafico_productos)
+
 
 @app.route('/export')
 def exportarExcel():
